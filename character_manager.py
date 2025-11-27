@@ -23,31 +23,51 @@ from custom_exceptions import (
 # ============================================================================
 
 def create_character(name, character_class):
-    """
-    Create a new character with stats based on class
-    
-    Valid classes: Warrior, Mage, Rogue, Cleric
-    
-    Returns: Dictionary with character data including:
-            - name, class, level, health, max_health, strength, magic
-            - experience, gold, inventory, active_quests, completed_quests
-    
-    Raises: InvalidCharacterClassError if class is not valid
-    """
-    # TODO: Implement character creation
-    # Validate character_class first
-    # Example base stats:
-    # Warrior: health=120, strength=15, magic=5
-    # Mage: health=80, strength=8, magic=20
-    # Rogue: health=90, strength=12, magic=10
-    # Cleric: health=100, strength=10, magic=15
-    
-    # All characters start with:
-    # - level=1, experience=0, gold=100
-    # - inventory=[], active_quests=[], completed_quests=[]
-    
-    # Raise InvalidCharacterClassError if class not in valid list
-    pass
+   valid_classes = {
+        "Warrior": {"health": 120, "strength": 15, "magic": 5},
+        "Mage": {"health": 80, "strength": 8, "magic": 20},
+        "Rogue": {"health": 90, "strength": 12, "magic": 10},
+        "Cleric": {"health": 100, "strength": 10, "magic": 15},
+    }
+
+    if character_class not in valid_classes:
+        raise InvalidCharacterClassError("Invalid character class: {}".format(character_class))
+
+    base = valid_classes[character_class]
+
+    character = {
+        "name": name,
+        "class": character_class,
+        "level": 1,
+        "health": base["health"],
+        "max_health": base["health"],
+        "strength": base["strength"],
+        "magic": base["magic"],
+        "experience": 0,
+        "gold": 100,
+        "inventory": [],           # list of item names (strings)
+        "active_quests": [],       # list of quest ids
+        "completed_quests": [],    # list of quest ids
+    }
+
+    return character
+
+def _ensure_save_dir(save_directory):
+    if not os.path.exists(save_directory):
+        os.makedirs(save_directory)
+
+def _list_to_csv(lst):
+    if not lst:
+        return ""
+    return ",".join(lst)
+
+def _csv_to_list(s):
+    if s is None:
+        return []
+    s = s.strip()
+    if s == "":
+        return []
+    return [item for item in s.split(",") if item != ""]
 
 def save_character(character, save_directory="data/save_games"):
     """
