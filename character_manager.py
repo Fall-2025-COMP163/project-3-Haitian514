@@ -22,22 +22,24 @@ from custom_exceptions import (
 # CHARACTER MANAGEMENT FUNCTIONS
 # ============================================================================
 
+
+from custom_exceptions import InvalidCharacterClassError
+
 def create_character(name, character_class):
-   valid_classes = {
+    class_stats = {
         "Warrior": {"health": 120, "strength": 15, "magic": 5},
-        "Mage": {"health": 80, "strength": 8, "magic": 20},
-        "Rogue": {"health": 90, "strength": 12, "magic": 10},
-        "Cleric": {"health": 100, "strength": 10, "magic": 15},
+        "Mage":    {"health": 80,  "strength": 8,  "magic": 20},
+        "Rogue":   {"health": 90,  "strength": 12, "magic": 10},
+        "Cleric":  {"health": 100, "strength": 10, "magic": 15}
     }
+    if formatted_class not in class_stats:
+        raise InvalidCharacterClassError(f"'{character_class}' is not a valid class.")
 
-    if character_class not in valid_classes:
-        raise InvalidCharacterClassError("Invalid character class: {}".format(character_class))
-
-    base = valid_classes[character_class]
-
-    character = {
+    base = class_stats[formatted_class]
+    
+    new_character = {
         "name": name,
-        "class": character_class,
+        "class": formatted_class,
         "level": 1,
         "health": base["health"],
         "max_health": base["health"],
@@ -45,52 +47,28 @@ def create_character(name, character_class):
         "magic": base["magic"],
         "experience": 0,
         "gold": 100,
-        "inventory": [],           # list of item names (strings)
-        "active_quests": [],       # list of quest ids
-        "completed_quests": [],    # list of quest ids
+        "inventory": [],
+        "active_quests": [],
+        "completed_quests": []
     }
+    
+    return new_character
 
-    return character
 
-def _ensure_save_dir(save_directory):
+def save_character(character, save_directory="data/save_games"):
     if not os.path.exists(save_directory):
         os.makedirs(save_directory)
 
-def _list_to_csv(lst):
-    if not lst:
-        return ""
-    return ",".join(lst)
-
-def _csv_to_list(s):
-    if s is None:
-        return []
-    s = s.strip()
-    if s == "":
-        return []
-    return [item for item in s.split(",") if item != ""]
-
-def save_character(character, save_directory="data/save_games"):
-  _ensure_save_dir(save_directory)
-
-    filename = os.path.join(save_directory, "{}_save.txt".format(character["name"]))
+    file_path = _get_save_path(character['name'], save_directory)
+    
+    validate_character_data(character)
 
     try:
-        with open(filename, "w", encoding="utf-8") as f:
-            f.write("NAME: {}\n".format(character.get("name", "")))
-            f.write("CLASS: {}\n".format(character.get("class", "")))
-            f.write("LEVEL: {}\n".format(character.get("level", 1)))
-            f.write("HEALTH: {}\n".format(character.get("health", 0)))
-            f.write("MAX_HEALTH: {}\n".format(character.get("max_health", 0)))
-            f.write("STRENGTH: {}\n".format(character.get("strength", 0)))
-            f.write("MAGIC: {}\n".format(character.get("magic", 0)))
-            f.write("EXPERIENCE: {}\n".format(character.get("experience", 0)))
-            f.write("GOLD: {}\n".format(character.get("gold", 0)))
-            f.write("INVENTORY: {}\n".format(_list_to_csv(character.get("inventory", []))))
-            f.write("ACTIVE_QUESTS: {}\n".format(_list_to_csv(character.get("active_quests", []))))
-            f.write("COMPLETED_QUESTS: {}\n".format(_list_to_csv(character.get("completed_quests", []))))
+        with open(file_path, 'w') as f:
+            json.dump(character, f, indent=4)
         return True
-    except (PermissionError, IOError):
-        raise
+    except (IOError, PermissionError) as e:
+        raise e
 
 def load_character(character_name, save_directory="data/save_games"):
   filename = os.path.join(save_directory, "{}_save.txt".format(character_name))
