@@ -5,6 +5,8 @@ Quest Handler Module - Final Implementation
 This module handles quest management, dependencies, and completion.
 """
 
+import character_manager
+
 from custom_exceptions import (
     QuestNotFoundError,
     QuestRequirementsNotMetError,
@@ -48,7 +50,7 @@ def accept_quest(character, quest_id, quest_data_dict):
 
 def complete_quest(character, quest_id, quest_data_dict):
     """
-    Complete an active quest and grant rewards
+    Complete an active quest AND grant rewards
     """
     if quest_id not in quest_data_dict:
         raise QuestNotFoundError(f"Quest ID '{quest_id}' not found.")
@@ -72,6 +74,11 @@ def complete_quest(character, quest_id, quest_data_dict):
         'xp': quest.get('reward_xp', 0),
         'gold': quest.get('reward_gold', 0)
     }
+    
+    # APPLY REWARDS (Fix for test_game_integration.py)
+    character_manager.gain_experience(character, rewards['xp'])
+    character_manager.add_gold(character, rewards['gold'])
+    
     return rewards
 
 def abandon_quest(character, quest_id):
@@ -302,7 +309,6 @@ def validate_quest_prerequisites(quest_data_dict):
             raise QuestNotFoundError(f"Quest '{quest_id}' requires missing prerequisite: '{prereq}'.")
             
     return True
-
 # ============================================================================
 # TESTING
 # ============================================================================

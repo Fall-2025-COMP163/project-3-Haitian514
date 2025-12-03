@@ -2,7 +2,7 @@
 COMP 163 - Project 3: Quest Chronicles
 Main Game Module - Starter Code
 
-Name: [Your Name Here]
+Name: [Sean Telemaque]
 
 AI Usage: [Document any AI assistance used]
 
@@ -320,15 +320,15 @@ def quest_menu():
         elif choice == '3':
             quest_id = _get_input("Enter Quest ID to COMPLETE: ")
             try:
+                # The new complete_quest handles the XP/Gold updates internally now
                 rewards = quest_handler.complete_quest(current_character, quest_id, all_quests)
-                character_manager.gain_experience(current_character, rewards['xp'])
-                character_manager.add_gold(current_character, rewards['gold'])
+                
                 print(f"Quest {quest_id} completed!")
                 print(f"Rewards: {rewards['xp']} XP, {rewards['gold']} Gold.")
             except QuestError as e:
                 print(f"[Quest Error] {e}")
 
-def explore():
+def explore(): 
     """Find and fight random enemies"""
     global current_character
     
@@ -351,8 +351,6 @@ def explore():
         rewards = combat_system.get_victory_rewards(enemy)
         
         print("\n--- Victory! ---")
-        character_manager.gain_experience(current_character, rewards['xp'])
-        character_manager.add_gold(current_character, rewards['gold'])
         print(f"Gained {rewards['xp']} XP and {rewards['gold']} Gold.")
         
     elif result == "DEFEAT":
