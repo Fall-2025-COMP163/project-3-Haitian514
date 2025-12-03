@@ -150,3 +150,62 @@ Test files are provided for your learning but are protected. Modifying test file
 
 You can view tests to understand requirements, but any modifications will be automatically detected.
 # ----------------------------------------------------------------------------------
+🏗️ Module Architecture:
+
+The project employs a **multi-modular architecture** where each core game function is isolated in its own Python file, ensuring a strong separation of concerns for easier testing and maintenance.
+
+| Module | Core Responsibility | Key Functions/Classes | Dependencies |
+| :--- | :--- | :--- | :--- |
+| **`main.py`** | Game flow, UI, and state management. | `main()`, `game_loop()`, `quest_menu()`, `combat_menu()` | All other modules |
+| **`character_manager.py`** | Character data creation, persistence (save/load/delete), and fundamental stat changes (XP, Gold, Healing). | `create_character()`, `save_character()`, `load_character()`, `gain_experience()` | `custom_exceptions.py` |
+| **`inventory_system.py`** | Item management, usage, and purchasing. | `add_item_to_inventory()`, `use_item()`, `purchase_item()`, `sell_item()` | `character_manager.py`, `custom_exceptions.py` |
+| **`quest_handler.py`** | Quest state tracking, prerequisites, and rewards. | `accept_quest()`, `complete_quest()`, `is_quest_completed()`, `can_accept_quest()` | `character_manager.py`, `custom_exceptions.py` |
+| **`combat_system.py`** | Battle logic, damage calculation, and enemy definition. | `SimpleBattle` class, `create_enemy()`, `calculate_damage()`, `get_victory_rewards()` | `custom_exceptions.py` |
+| **`game_data.py`** | Reading and parsing static game data (Quests, Items) from external text files. | `load_quests()`, `load_items()`, `create_default_data_files()` | `custom_exceptions.py` |
+| **`custom_exceptions.py`** | Defines all project-specific exception classes. | `GameError`, `CharacterError`, `QuestError`, etc. | None |
+
+---
+
+### 1.2. Exception Strategy:
+
+The project utilizes a structured **hierarchical exception strategy** defined in `custom_exceptions.py`. This provides specific error handling while maintaining a unified approach through inherited classes.
+
+| Exception | Raised When/Why | Module |
+| :--- | :--- | :--- |
+| **`CharacterNotFoundError`** | Attempting to load a character save file that does not exist. | `character_manager.py` |
+| **`InventoryFullError`** | An item is added when the inventory size limit (`MAX_INVENTORY_SIZE`) has been reached. | `inventory_system.py` |
+| **`MissingDataFileError`** | A required static data file cannot be found. | `game_data.py` |
+| **`QuestRequirementsNotMetError`** | A character attempts to accept a quest without having completed the necessary prerequisite quest. | `quest_handler.py` |
+| **`ValueError`** (Standard Python) | Specifically raised in `character_manager.add_gold` when the transaction would result in a **negative gold total**. | `character_manager.py` |
+
+---
+
+### 1.3. Key Design Choices:
+
+* **Quest Completion Side-Effect:**
+    * **Justification:** The `quest_handler.complete_quest()` function was designed to directly **apply XP and Gold rewards** to the character object. This deviates slightly from pure separation of concerns but was a critical decision made to ensure compliance with the **integration test requirements** (`test_game_integration.py`).
+* **Character and Enemy Naming:**
+    * **Justification:** Enemy names returned by `combat_system.create_enemy()` are consistently **Title Case** (e.g., "Goblin") to match test assertions and maintain display consistency.
+* **Data Handling:**
+    * **Justification:** Static game data is stored in simple pipe-separated **text files** (`.txt`) and parsed by `game_data.py`. This choice simplifies external editing and directly supports testing of file parsing and file-related exception handling.
+
+---
+
+### 1.4. AI Usage:
+
+AI assistance (Gemini) was used primarily for:
+
+1.  **Debugging and Refactoring:** Identifying the source of test failures and providing code fixes (e.g., correcting the logic flow in `quest_handler.complete_quest`).
+2.  **Partial Code Completion:** Implementing **`TODO`** sections, such as the logic for `character_manager.heal_character` and `character_manager.validate_character_data`.
+3.  **Test Requirement Analysis:** Confirming exception requirements (e.g., raising standard `ValueError` for negative gold) to ensure all tests passed successfully.
+
+## 2. How to Play:
+
+### Requirements
+* Python 3.x
+
+### 1. Run the Game
+Navigate to the project root directory in your terminal and execute:
+
+```bash
+python main.py
